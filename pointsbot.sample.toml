@@ -78,16 +78,16 @@ scoreboard = ""
 ################################################################################
 
 [[levels]]
-name = "Level One"
+name = "Contributor"
 points = 1
 flair_template_id = ""
 
 [[levels]]
-name = "Level Two"
+name = "Helper"
 points = 25
 flair_template_id = ""
 
 [[levels]]
-name = "Level Three"
+name = "Ultra Helper"
 points = 100
 flair_template_id = ""

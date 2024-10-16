@@ -11,8 +11,8 @@
 
 ## Description
 
-This is a bot for Reddit that monitors solutions to questions or problems in a
-subreddit and awards points to the user responsible for the solution.
+This is a bot for Reddit that monitors answers to questions or problems in a
+subreddit and awards points to the user responsible for the answer.
 
 This bot was conceived as a response to
 [this request](https://www.reddit.com/r/RequestABot/comments/emdeim/expert_level_bot_coding/).
@@ -21,15 +21,15 @@ For more information about running bots for Reddit made with the Python
 programming language,
 [see this pinned post in r/RequestABot](https://www.reddit.com/r/RequestABot/comments/cyll80/a_comprehensive_guide_to_running_your_reddit_bot/).
 
-The bot will award a point to a redditor when the OP of a submission includes
-"!Solved" or "!solved" somewhere in a reply to the redditor's comment on that
-submission.  These points will allow the redditor to advance to different
+The bot will award a point to a redditor when the OP of a thread includes "Thank
+you", "Thanks", "Ty", "Thx" somewhere in a reply to the redditor's comment on
+that thread.  These points will allow the redditor to advance to different
 levels.
 
 At each level, the redditor's flair for the subreddit will be updated to reflect
 their current level. However, the bot should not change a mod's flair.
 
-Each time a point is awarded, the bot will reply to the solution comment to
+Each time a point is awarded, the bot will reply to the helper comment to
 notify the redditor of their total points, with a progress bar to show how many
 points they need to reach the next level and a reminder of the title of the next
 level.
@@ -40,8 +40,7 @@ represent 100 points each, but this behavior may be configurable in the future.
 The first time a point is awarded, the bot's reply comment will also include a
 brief message detailing the points system.
 
-Only the submission OP's first "!Solved" comment should result in a point being
-awarded for each submission.
+The same helper can only be thanked once in a thread.
 
 ## Installation
 
@@ -64,7 +63,7 @@ the Github repository using the green `Clone or download` button. If ZIP, be
 sure to extract the files from the archive before moving on.
 
 To install the packages necessary for running the bot, navigate to the project
-root directory and run `pipenv install`.
+root directory and run `pipenv install --python=[PYTHON_COMMAND]`.
 To uninstall (i.e. delete the project's virtual environment and the installed
 python packages), navigate to the project root directory and instead run
 `pipenv --rm`.
@@ -87,7 +86,7 @@ authenticating with Reddit.
 4. Select the "script" radio button.
 5. Provide a brief description.
 6. For the "about url", you can provide a link to the Github repository:
-    https://github.com/cur33/PointsBot
+    https://github.com/Y-T-G/PointsBot
 7. Since it is unused, the "redirect uri" can be set to something like:
     http://www.example.com/unused/redirect/uri
 8. Select "create app".
@@ -155,18 +154,14 @@ TOML syntax used for the file can be found on
 
 ## Usage
 
-### Basic Usage
-
-**IN PROGRESS**
-
-### Advanced Usage
-
 The simplest way to run the bot is to navigate to the project root directory and
 run:
 
 ```bash
 pipenv run python PointsBot.py
 ```
+
+The first run should trigger the interactive confiuration.
 
 ## Terms of use for a bot for Reddit
 

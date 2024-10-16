@@ -109,7 +109,7 @@ class Config:
             log_path=logpath,
             feedback_url=obj['links']['feedback'],
             scoreboard_url=obj['links']['scoreboard'],
-            tag_string=obj['core']['valid_tags'],
+            tag_string=obj['core'].get('valid_tags', None),
         )
 
     def save(self):
@@ -174,7 +174,7 @@ def interactive_config(dest):
     print('\nThese may be provided in any order; the bot will sort them later.')
     print('\nDo not provide more than one level with the same number of points.')
     print('\nNote that at the moment, providing a level points value of zero will not set a '
-          'default flair, because users must solve at least one issue before the bot will keep '
+          'default flair, because users must help at least one issue before the bot will keep '
           'track of their points and set their flair for the first time.')
     print('\nFor any more questions, please refer to the README on the Github page.')
 

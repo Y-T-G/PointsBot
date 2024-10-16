@@ -23,7 +23,7 @@ EXCESS_SYMBOL_TITLE = 'a star'   # Used in comment body
 
 def make(redditor, points, level_info, feedback_url=None, scoreboard_url=None, is_add=True):
     if is_add:
-        paras = [solved_header()]
+        paras = [helped_header()]
     else:
         paras = [remove_header()]
 
@@ -64,8 +64,8 @@ def make(redditor, points, level_info, feedback_url=None, scoreboard_url=None, i
 ### Comment Section Functions ###
 
 
-def solved_header():
-    return 'Thanks! Post marked as Solved!'
+def helped_header():
+    return 'Thanks! Point awarded!'
 
 
 def remove_header():
@@ -151,14 +151,14 @@ def divider():
 
 
 def footer(feedback_url=None, scoreboard_url=None):
-    footer_sections = ['^(Bot maintained by GlipGlorp7)']
+    footer_sections = []
     if scoreboard_url:
         # https://points.minecrafthelp.co.uk
-        footer_sections.append(f'[^Scoreboard]({scoreboard_url})')
+        footer_sections.append(f'[^(Scoreboard)]({scoreboard_url})')
     if feedback_url:
         # https://forms.gle/m94aGjFQwGopqQ836
         footer_sections.append(f'[^Feedback]({feedback_url})')
-    footer_sections.append('[^Source Code](https://github.com/cur33/PointsBot)')
+    # footer_sections.append('[^Source Code](https://github.com/Y-T-G/PointsBot)')
 
     return ' ^| '.join(footer_sections)
 

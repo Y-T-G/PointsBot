@@ -11,10 +11,10 @@ levels = [
 
 
 pastlvls, curlvl, nextlvl = user_level_info(1, levels)
-assert (pastlevels == [] and curlvl is None and nextlvl == levels[0])
+assert (pastlvls == [] and curlvl is None and nextlvl == levels[0])
 
 pastlvls, curlvl, nextlvl = user_level_info(5, levels)
-assert (pastlevels == [] and curlvl == levels[0] and nextlvl == levels[1])
+assert (pastlvls == [] and curlvl == levels[0] and nextlvl == levels[1])
 
 pastlvls, curlvl, nextlvl = user_level_info(15, levels)
 assert (pastlvls == levels[:1] and curlvl == levels[1] and nextlvl == levels[2])

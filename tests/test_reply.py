@@ -20,15 +20,15 @@ def make_comments(subreddit, levels):
         if sub.title == 'Testing comment scenarios':
             redditor = sub.author
             for points in testpoints:
-                body = f'Solver: {redditor}\n\nTotal points after solving: {points}'
-                print_level(0, body)
+                body = f'Helper: {redditor}\n\nTotal points after helping: {points}'
+                print(0, body)
                 comm = sub.reply(body)
                 if comm:
-                    level_info = level.user_level_info(points, levels)
-                    body = reply.make(redditor, points, level_info)
+                    level_info = pointsbot.level.user_level_info(points, levels)
+                    body = pointsbot.reply.make(redditor, points, level_info)
                     comm.reply(body)
                 else:
-                    print_level(1, 'ERROR: Unable to comment')
+                    print(1, 'ERROR: Unable to comment')
             break
 
 

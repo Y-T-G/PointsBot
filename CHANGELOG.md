@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 0.3.0, 2024-10-16 (Y-T-G)
+
+Features:
+1. Bot will look for different forms of "thanks" instead of "solved".
+2. Bot does not award points to mods.
+
+Fixes: N/A
+
+Miscellaneous: N/A
+
 ## Version 0.2.1, 2021-04-24
 
 Features: N/A

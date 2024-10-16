@@ -141,7 +141,7 @@ class Database:
             )
             ''',
             '''
-            CREATE TABLE IF NOT EXISTS solution (
+            CREATE TABLE IF NOT EXISTS answer (
                 submission_rowid INTEGER NOT NULL,
                 author_rowid INTEGER NOT NULL,
                 comment_rowid INTEGER NOT NULL,
@@ -157,9 +157,9 @@ class Database:
             '''
         ],
         DatabaseVersion(0, 2, 1): [
-            # Remove constraints on `solution.submission_rowid` via a temp table
+            # Remove constraints on `answer.submission_rowid` via a temp table
             '''
-            CREATE TABLE temp_solution (
+            CREATE TABLE temp_answer (
                 author_rowid INTEGER NOT NULL,
                 comment_rowid INTEGER NOT NULL,
                 chosen_by_comment_rowid INTEGER NOT NULL,
@@ -173,15 +173,15 @@ class Database:
             )
             ''',
             '''
-            INSERT INTO temp_solution (author_rowid, comment_rowid, chosen_by_comment_rowid, removed_by_comment_rowid, submission_rowid)
+            INSERT INTO temp_answer (author_rowid, comment_rowid, chosen_by_comment_rowid, removed_by_comment_rowid, submission_rowid)
             SELECT author_rowid, comment_rowid, chosen_by_comment_rowid, removed_by_comment_rowid, submission_rowid
-            FROM solution
+            FROM answer
             ''',
             '''
-            DROP TABLE solution;
+            DROP TABLE answer;
             ''',
             '''
-            ALTER TABLE temp_solution RENAME TO solution
+            ALTER TABLE temp_answer RENAME TO answer
             ''',
 
             # Remove constraints on `submission.author_id` via a temp table
@@ -286,51 +286,51 @@ class Database:
         return self.cursor.rowcount
 
     @transaction
-    def has_already_solved_once(self, submission, solver):
+    def has_already_helped_once(self, submission, helper):
         select_stmt = '''
-            SELECT count(solution.rowid) AS num_solutions
-            FROM solution
-                JOIN submission ON (solution.submission_rowid = submission.rowid)
-                JOIN redditor ON (solution.author_rowid = redditor.rowid)
+            SELECT count(answer.rowid) AS num_answers
+            FROM answer
+                JOIN submission ON (answer.submission_rowid = submission.rowid)
+                JOIN redditor ON (answer.author_rowid = redditor.rowid)
             WHERE submission.id = :submission_id
                 AND redditor.id = :author_id
         '''
-        self.cursor.execute(select_stmt, {'submission_id': submission.id, 'author_id': solver.id})
+        self.cursor.execute(select_stmt, {'submission_id': submission.id, 'author_id': helper.id})
         row = self.cursor.fetchone()
-        return row and row['num_solutions'] > 0
+        return row and row['num_answers'] > 0
 
-    def add_point_for_solution(self, submission, solver, solution_comment, chooser, chosen_by_comment):
+    def add_point_for_answer(self, submission, helper, helper_comment, chooser, chosen_by_comment):
         self._add_submission(submission)
-        if not self._is_comment_already_saved(solution_comment):
-            self._add_comment(solution_comment, solver)
+        if not self._is_comment_already_saved(helper_comment):
+            self._add_comment(helper_comment, helper)
         if not self._is_comment_already_saved(chosen_by_comment):
             self._add_comment(chosen_by_comment, chooser)
 
-        self._update_points(solver, 1)
-        rowcount = self._add_solution(submission, solver, solution_comment, chosen_by_comment)
+        self._update_points(helper, 1)
+        rowcount = self._add_answer(submission, helper, helper_comment, chosen_by_comment)
         if rowcount == 0:
-            # Was not able to add solution, probably because user has already solved this submission
-            self._update_points(solver, -1)
+            # Was not able to award points, probably because user has already awarded this submission
+            self._update_points(helper, -1)
         # if rowcount > 0:
         #     # TODO update author_rowid for comment?
         return rowcount
 
-    def soft_remove_point_for_solution(self, submission, solver, remover, removed_by_comment):
+    def soft_remove_point_for_answer(self, submission, helper, remover, removed_by_comment):
         if not self._is_comment_already_saved(removed_by_comment):
             self._add_comment(removed_by_comment, remover)
-        rowcount = self._soft_remove_solution(submission, solver, removed_by_comment)
+        rowcount = self._soft_remove_answer(submission, helper, removed_by_comment)
         if rowcount > 0:
-            rowcount = self._update_points(solver, -1)
+            rowcount = self._update_points(helper, -1)
         return rowcount
 
     @transaction
-    def add_back_point_for_solution(self, submission, solver):
-        self._update_points(solver, 1)
+    def add_back_point_for_answer(self, submission, helper):
+        self._update_points(helper, 1)
         submission_rowid = self._get_submission_rowid(submission)
-        author_rowid = self._get_redditor_rowid(solver)
+        author_rowid = self._get_redditor_rowid(helper)
         params = {'submission_rowid': submission_rowid, 'author_rowid': author_rowid}
         update_stmt = '''
-            UPDATE solution
+            UPDATE answer
             SET removed_by_comment_rowid = NULL
             WHERE submission_rowid = :submission_rowid
                 AND author_rowid = :author_rowid
@@ -338,18 +338,18 @@ class Database:
         return self.cursor.execute(update_stmt, params)
 
     @transaction
-    def remove_point_and_delete_solution(self, submission, solver):
+    def remove_point_and_delete_answer(self, submission, helper):
         params = {
             'submission_rowid': self._get_submission_rowid(submission),
-            'author_rowid': self._get_redditor_rowid(solver)
+            'author_rowid': self._get_redditor_rowid(helper)
         }
         delete_stmt = '''
-            DELETE FROM solution
+            DELETE FROM answer
             WHERE submission_rowid = :submission_rowid
                 AND author_rowid = :author_rowid
         '''
         self.cursor.execute(delete_stmt, params)
-        return self._update_points(solver, -1)
+        return self._update_points(helper, -1)
 
     @transaction
     def get_points(self, redditor, add_if_none=False):
@@ -425,9 +425,9 @@ class Database:
         return self.cursor.rowcount
 
     @transaction
-    def _add_solution(self, submission, solver, comment, chosen_by_comment):
+    def _add_answer(self, submission, helper, comment, chosen_by_comment):
         submission_rowid = self._get_submission_rowid(submission)
-        author_rowid = self._get_redditor_rowid(solver)
+        author_rowid = self._get_redditor_rowid(helper)
         comment_rowid = self._get_comment_rowid(comment)
         chosen_by_comment_rowid = self._get_comment_rowid(chosen_by_comment)
         params = {
@@ -437,16 +437,16 @@ class Database:
             'chosen_by_comment_rowid': chosen_by_comment_rowid
         }
         insert_stmt = '''
-            INSERT INTO solution (submission_rowid, author_rowid, comment_rowid, chosen_by_comment_rowid)
+            INSERT INTO answer (submission_rowid, author_rowid, comment_rowid, chosen_by_comment_rowid)
             VALUES (:submission_rowid, :author_rowid, :comment_rowid, :chosen_by_comment_rowid)
         '''
         self.cursor.execute(insert_stmt, params)
         return self.cursor.rowcount
 
     @transaction
-    def _soft_remove_solution(self, submission, solver, removed_by_comment):
+    def _soft_remove_answer(self, submission, helper, removed_by_comment):
         submission_rowid = self._get_submission_rowid(submission)
-        author_rowid = self._get_redditor_rowid(solver)
+        author_rowid = self._get_redditor_rowid(helper)
         removed_by_comment_rowid = self._get_comment_rowid(removed_by_comment)
         params = {
             'submission_rowid': submission_rowid,
@@ -454,7 +454,7 @@ class Database:
             'removed_by_comment_rowid': removed_by_comment_rowid,
         }
         update_stmt = '''
-            UPDATE solution
+            UPDATE answer
             SET removed_by_comment_rowid = :removed_by_comment_rowid
             WHERE submission_rowid = :submission_rowid AND author_rowid = :author_rowid
         '''
